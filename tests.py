@@ -30,6 +30,22 @@ class TestBooksCollector:
 
         assert len(collector.books_genre) == 1
 
+    @pytest.mark.parametrize('book_name', ['', 'Книга, которая имеет название, превышающее ограничение в 40 символов'])
+    def test_add_new_book_add_book_with_incorrect_name_length(self, book_name):
+        collector = BooksCollector()
+
+        collector.add_new_book(book_name)
+
+        assert len(collector.books_genre) == 0
+
+    @pytest.mark.parametrize('book_name', ['Я', 'Книга с названием 40 символов обо всём!'])
+    def test_add_new_book_add_book_with_correct_name_length(self, book_name):
+        collector = BooksCollector()
+
+        collector.add_new_book(book_name)
+
+        assert len(collector.books_genre) == 1
+
     @pytest.mark.parametrize(
         'book_name, book_genre',
         [
@@ -48,59 +64,35 @@ class TestBooksCollector:
 
         assert collector.books_genre[book_name] == book_genre
 
-    @pytest.mark.parametrize(
-        'book_name, book_genre',
-        [
-            ['Машина времени', 'Фантастика'],
-            ['Зов Ктулху', 'Ужасы'],
-            ['Убийство в Восточном экспрессе', 'Детективы'],
-            ['Рик и Морти', 'Мультфильмы'],
-            ['Венецианский купец', 'Комедии']
-        ]
-    )
-    def test_get_book_genre_check_genre_name(self, book_name, book_genre):
+    def test_get_book_genre_check_genre_name(self):
         collector = BooksCollector()
 
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, book_genre)
+        collector.add_new_book('Машина времени')
+        collector.set_book_genre('Машина времени', 'Фантастика')
 
-        assert collector.get_book_genre(book_name) == book_genre
+        assert collector.get_book_genre('Машина времени') == 'Фантастика'
 
-    @pytest.mark.parametrize(
-        'book_name, book_genre',
-        [
-            ['Машина времени', 'Фантастика'],
-            ['Зов Ктулху', 'Ужасы'],
-            ['Убийство в Восточном экспрессе', 'Детективы'],
-            ['Рик и Морти', 'Мультфильмы'],
-            ['Венецианский купец', 'Комедии']
-        ]
-    )
-    def test_get_books_with_specific_genre_check_book_name(self, book_name, book_genre):
+    def test_get_books_with_specific_genre_check_book_name(self):
         collector = BooksCollector()
 
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, book_genre)
+        collector.add_new_book('Машина времени')
+        collector.set_book_genre('Машина времени', 'Фантастика')
 
-        assert collector.get_books_with_specific_genre(book_genre) == [book_name]
+        collector.add_new_book('Зов Ктулху')
+        collector.set_book_genre('Зов Ктулху', 'Ужасы')
 
-    @pytest.mark.parametrize(
-        'book_name, book_genre',
-        [
-            ['Машина времени', 'Фантастика'],
-            ['Зов Ктулху', 'Ужасы'],
-            ['Убийство в Восточном экспрессе', 'Детективы'],
-            ['Рик и Морти', 'Мультфильмы'],
-            ['Венецианский купец', 'Комедии']
-        ]
-    )
-    def test_get_books_genre_check_genre_name(self, book_name, book_genre):
+        assert collector.get_books_with_specific_genre('Фантастика') == ['Машина времени']
+
+    def test_get_books_genre_check_dictionary_elements(self):
         collector = BooksCollector()
 
-        collector.add_new_book(book_name)
-        collector.set_book_genre(book_name, book_genre)
+        collector.add_new_book('Машина времени')
+        collector.set_book_genre('Машина времени', 'Фантастика')
 
-        assert collector.get_books_genre() == {book_name: book_genre}
+        collector.add_new_book('Зов Ктулху')
+        collector.set_book_genre('Зов Ктулху', 'Ужасы')
+
+        assert collector.get_books_genre() == {'Машина времени': 'Фантастика', 'Зов Ктулху': 'Ужасы'}
 
     @pytest.mark.parametrize(
         'book_name, book_genre',
@@ -118,22 +110,22 @@ class TestBooksCollector:
 
         assert collector.get_books_for_children() == [book_name]
 
-    def test_add_book_in_favorites_check_list_length(self):
+    def test_add_book_in_favorites_check_that_book_in_favorites(self):
         collector = BooksCollector()
 
         collector.add_new_book('Машина времени')
         collector.add_book_in_favorites('Машина времени')
 
-        assert len(collector.favorites) == 1
+        assert collector.get_list_of_favorites_books() == ['Машина времени']
 
-    def test_delete_book_from_favorites_check_list_length(self):
+    def test_delete_book_from_favorites_check_that_book_not_in_favorites(self):
         collector = BooksCollector()
 
         collector.add_new_book('Машина времени')
         collector.add_book_in_favorites('Машина времени')
         collector.delete_book_from_favorites('Машина времени')
 
-        assert len(collector.favorites) == 0
+        assert collector.get_list_of_favorites_books() == []
 
     def test_get_list_of_favorites_books_check_book_name(self):
         collector = BooksCollector()
@@ -142,4 +134,4 @@ class TestBooksCollector:
 
         collector.add_book_in_favorites('Рик и Морти')
 
-        assert collector.favorites[0] == 'Рик и Морти'
+        assert collector.get_list_of_favorites_books() == ['Рик и Морти']
